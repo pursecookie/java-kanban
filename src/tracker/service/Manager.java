@@ -5,6 +5,7 @@ import tracker.model.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 public class Manager {
     int counter = 1;
@@ -12,84 +13,84 @@ public class Manager {
     HashMap<Integer, Epic> epicList = new HashMap<>();
     HashMap<Integer, Subtask> subtaskList = new HashMap<>();
 
-    /* В описании ТЗ говорится о том, что функционал приложения должен быть прописан в единственном классе -
-    Manager. При этом, каждый тип задачи должен иметь свой метод, и иногда бывает такое, что эти
-    методы схожи, просто нуждаются в переопределении (дублирование кода). Было бы правильнее сделать свой Manager под
-    каждый тип задачи? Например, EpicManager и SubtaskManager, которые наследовали бы от TaskManager. И, если сигнатура
-    метода отличается, мы бы просто делали новый метод для данного типа задачи. Иначе создается впечатление, что в кучу
-    смешались люди и кони, как и методы для разных типов задач. Разделить эти методы по классам было бы структурнее,
-    мне кажется. */
-
-    public void createTask(String title, String subject) {
-        Task task = new Task(title, subject, counter, Status.NEW);
+    public void createTask(String title, String description) {
+        Task task = new Task(title, description, counter, Status.NEW);
         counter++;
         taskList.put(task.getId(), task);
     }
 
-    public void createEpic(String title, String subject) {
-        Epic epic = new Epic(title, subject, counter, Status.NEW, new ArrayList<>());
+    public void createEpic(String title, String description) {
+        Epic epic = new Epic(title, description, counter, Status.NEW, new ArrayList<>());
         counter++;
         epicList.put(epic.getId(), epic);
     }
 
-    public void createSubtask(String title, String subject, int epicId) {
-        Subtask subtask = new Subtask(title, subject, counter, Status.NEW, epicId);
+    public void createSubtask(String title, String description, int epicId) {
+        Subtask subtask = new Subtask(title, description, counter, Status.NEW, epicId);
         counter++;
         subtaskList.put(subtask.getId(), subtask);
-        epicList.get(epicId).getSubtasks().add(subtask.getId());
+
+        /* Подскажите, зачем нужно добавлять проверку на NPE? По логике представленного в ТЗ интерфейса мы не можем
+        создать подзадачу без эпика. Т.е. передаваемый в кач-ве аргумента ID эпика априори существует. Иначе я не
+        понимаю, как мне выполнить эту проверку без System.out.println (если их все нужно удалить из данного класса).
+        Можно было рассмотреть вариант, как в предыдущем ТЗ, по отлавливанию I0 Exception, но мы этого еще не
+        проходили, да и опять же - там используется System.out.println*/
+
+        Epic epic = epicList.get(epicId);
+        epic.addSubtaskId(subtask.getId());
+        updateEpic(epic);
     }
 
-    public void getTaskList() {
-        if (!taskList.isEmpty()) {
-            System.out.println("Задачи:");
-            for (Integer id : taskList.keySet()) {
-                System.out.println(taskList.get(id));
-            }
-        } else {
-            System.out.println("Вы ещё не внесли ни одной задачи");
+    public List<Task> getTaskList() {
+        List<Task> getTasks = new ArrayList<>();
+        for (Integer id : taskList.keySet()) {
+            getTasks.add(taskList.get(id));
         }
+        return getTasks;
     }
 
-    public void getEpicList() {
-        if (!epicList.isEmpty()) {
-            for (Integer epicId : epicList.keySet()) {
-                System.out.println("Эпик:\r\n" + epicList.get(epicId));
-                getSubtaskListByEpic(epicId);
-            }
-        } else {
-            System.out.println("Вы ещё не внесли ни одного эпика");
+    public List<Subtask> getSubtaskList() {
+        List<Subtask> getSubtasks = new ArrayList<>();
+        for (Integer id : subtaskList.keySet()) {
+            getSubtasks.add(subtaskList.get(id));
         }
+        return getSubtasks;
     }
 
-    public void getSubtaskListByEpic(int epicId) {
-        if (epicList.get(epicId).getSubtasks().isEmpty()) {
-            System.out.println("Вы ещё не внесли подзадачи для данного эпика");
-        } else {
-            System.out.println("Подзадачи эпика:");
-            for (Integer subtaskId : subtaskList.keySet()) {
-                if (subtaskList.get(subtaskId).getEpicId() == epicId) {
-                    System.out.println(subtaskList.get(subtaskId));
-                }
+    public List<Epic> getEpicList() {
+        List<Epic> getEpics = new ArrayList<>();
+        for (Integer epicId : epicList.keySet()) {
+            getEpics.add(epicList.get(epicId));
+        }
+        return getEpics;
+    }
+
+    public List<Subtask> getSubtaskListByEpic(int epicId) {
+        List<Subtask> getEpicSubtasks = new ArrayList<>();
+        for (Integer subtaskId : subtaskList.keySet()) {
+            if (subtaskList.get(subtaskId).getEpicId() == epicId) {
+                getEpicSubtasks.add(subtaskList.get(subtaskId));
             }
         }
+        return getEpicSubtasks;
     }
 
-    public void getTaskById(int id) {
-        System.out.println(taskList.get(id));
+    public Task getTaskById(int id) {
+        return taskList.get(id);
     }
 
-    public void getEpicById(int id) {
-        System.out.println(epicList.get(id));
+    public Epic getEpicById(int id) {
+        return epicList.get(id);
     }
 
-    public void getSubtaskById(int id) {
-        System.out.println(subtaskList.get(id));
+    public Subtask getSubtaskById(int id) {
+        return subtaskList.get(id);
     }
 
-    public void updateTask(int id, String title, String subject, Status status) {
-        taskList.get(id).setTitle(title);
-        taskList.get(id).setSubject(subject);
-        taskList.get(id).setStatus(status);
+    public void updateTask(Task task) {
+        taskList.get(task.getId()).setTitle(task.getTitle());
+        taskList.get(task.getId()).setDescription(task.getDescription());
+        taskList.get(task.getId()).setStatus(task.getStatus());
     }
 
     public boolean checkIsNew(ArrayList<Status> subtaskStatus) {
@@ -110,29 +111,29 @@ public class Manager {
         return true;
     }
 
-    public void updateEpic(int id, String title, String subject) {
-        epicList.get(id).setTitle(title);
-        epicList.get(id).setSubject(subject);
+    public void updateEpic(Epic epic) {
+        epicList.get(epic.getId()).setTitle(epic.getTitle());
+        epicList.get(epic.getId()).setDescription(epic.getDescription());
 
         ArrayList<Status> subtaskStatus = new ArrayList<>();
 
-        for (Integer subtaskId : epicList.get(id).getSubtasks()) {
+        for (Integer subtaskId : epicList.get(epic.getId()).getSubtasksIds()) {
             subtaskStatus.add(subtaskList.get(subtaskId).getStatus());
         }
-
-        if (epicList.get(id).getSubtasks().isEmpty() || checkIsNew(subtaskStatus)) {
-            epicList.get(id).setStatus(Status.NEW);
+        if (epicList.get(epic.getId()).getSubtasksIds().isEmpty() || checkIsNew(subtaskStatus)) {
+            epicList.get(epic.getId()).setStatus(Status.NEW);
         } else if (checkIsDone(subtaskStatus)) {
-            epicList.get(id).setStatus(Status.DONE);
+            epicList.get(epic.getId()).setStatus(Status.DONE);
         } else {
-            epicList.get(id).setStatus(Status.IN_PROGRESS);
+            epicList.get(epic.getId()).setStatus(Status.IN_PROGRESS);
         }
     }
 
-    public void updateSubtask(int id, String title, String subject, Status status) {
-        subtaskList.get(id).setTitle(title);
-        subtaskList.get(id).setSubject(subject);
-        subtaskList.get(id).setStatus(status);
+    public void updateSubtask(Subtask subtask) {
+        subtaskList.get(subtask.getId()).setTitle(subtask.getTitle());
+        subtaskList.get(subtask.getId()).setDescription(subtask.getDescription());
+        subtaskList.get(subtask.getId()).setStatus(subtask.getStatus());
+        updateEpic(epicList.get(subtask.getEpicId()));
     }
 
     public void deleteTaskById(int id) {
@@ -145,9 +146,10 @@ public class Manager {
     }
 
     public void deleteSubtaskById(int id) {
-        int epicId = subtaskList.get(id).getEpicId();
-        epicList.get(epicId).getSubtasks().remove(Integer.valueOf(id));
+        Epic epic = epicList.get(subtaskList.get(id).getEpicId());
+        epic.removeSubtask(id);
         subtaskList.remove(id);
+        updateEpic(epic);
     }
 
     public void deleteSubtaskByEpic(int epicId) {
@@ -155,13 +157,14 @@ public class Manager {
 
         for (Integer id : epicList.keySet()) {
             if (id == epicId) {
-                subtaskToRemove.addAll(epicList.get(id).getSubtasks());
+                subtaskToRemove.addAll(epicList.get(epicId).getSubtasksIds());
             }
         }
-        epicList.get(epicId).getSubtasks().removeAll(subtaskToRemove);
+        epicList.get(epicId).getSubtasksIds().removeAll(subtaskToRemove);
         for (Integer subtaskId : subtaskToRemove) {
             subtaskList.keySet().removeAll(Collections.singletonList(subtaskId));
         }
+        updateEpic(epicList.get(epicId));
     }
 
     public void deleteAllTasks() {
@@ -175,7 +178,8 @@ public class Manager {
 
     public void deleteAllSubtasks() {
         for (Integer epicId : epicList.keySet()) {
-            epicList.get(epicId).getSubtasks().clear();
+            Epic epic = epicList.get(epicId);
+            epic.cleanSubtaskIds();
         }
         subtaskList.clear();
     }
