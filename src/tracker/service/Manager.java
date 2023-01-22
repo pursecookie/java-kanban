@@ -3,7 +3,6 @@ package tracker.service;
 import tracker.model.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,39 +29,24 @@ public class Manager {
         counter++;
         subtaskList.put(subtask.getId(), subtask);
 
-        /* Подскажите, зачем нужно добавлять проверку на NPE? По логике представленного в ТЗ интерфейса мы не можем
-        создать подзадачу без эпика. Т.е. передаваемый в кач-ве аргумента ID эпика априори существует. Иначе я не
-        понимаю, как мне выполнить эту проверку без System.out.println (если их все нужно удалить из данного класса).
-        Можно было рассмотреть вариант, как в предыдущем ТЗ, по отлавливанию I0 Exception, но мы этого еще не
-        проходили, да и опять же - там используется System.out.println*/
-
         Epic epic = epicList.get(epicId);
+        if (epic == null) {
+            return;
+        }
         epic.addSubtaskId(subtask.getId());
         updateEpic(epic);
     }
 
     public List<Task> getTaskList() {
-        List<Task> getTasks = new ArrayList<>();
-        for (Integer id : taskList.keySet()) {
-            getTasks.add(taskList.get(id));
-        }
-        return getTasks;
+        return new ArrayList<>(this.taskList.values());
     }
 
     public List<Subtask> getSubtaskList() {
-        List<Subtask> getSubtasks = new ArrayList<>();
-        for (Integer id : subtaskList.keySet()) {
-            getSubtasks.add(subtaskList.get(id));
-        }
-        return getSubtasks;
+        return new ArrayList<>(this.subtaskList.values());
     }
 
     public List<Epic> getEpicList() {
-        List<Epic> getEpics = new ArrayList<>();
-        for (Integer epicId : epicList.keySet()) {
-            getEpics.add(epicList.get(epicId));
-        }
-        return getEpics;
+        return new ArrayList<>(this.epicList.values());
     }
 
     public List<Subtask> getSubtaskListByEpic(int epicId) {
@@ -87,10 +71,19 @@ public class Manager {
         return subtaskList.get(id);
     }
 
+    /* В методах по обновлению задач я решила менять именно значения полей объекта класса, т.к. мне это показалось
+    безопаснее и более гибко, чем если мы по ID напрямую заменим значение (объект) в мапе. Но я пока не разбираюсь,
+    что сколько памяти занимает, поэтому могу ошибаться. */
+
     public void updateTask(Task task) {
-        taskList.get(task.getId()).setTitle(task.getTitle());
-        taskList.get(task.getId()).setDescription(task.getDescription());
-        taskList.get(task.getId()).setStatus(task.getStatus());
+        if (task == null) {
+            return;
+        }
+        task = taskList.get(task.getId());
+
+        task.setTitle(task.getTitle());
+        task.setDescription(task.getDescription());
+        task.setStatus(task.getStatus());
     }
 
     public boolean checkIsNew(ArrayList<Status> subtaskStatus) {
@@ -112,8 +105,13 @@ public class Manager {
     }
 
     public void updateEpic(Epic epic) {
-        epicList.get(epic.getId()).setTitle(epic.getTitle());
-        epicList.get(epic.getId()).setDescription(epic.getDescription());
+        if (epic == null) {
+            return;
+        }
+        epic = epicList.get(epic.getId());
+
+        epic.setTitle(epic.getTitle());
+        epic.setDescription(epic.getDescription());
 
         ArrayList<Status> subtaskStatus = new ArrayList<>();
 
@@ -130,9 +128,14 @@ public class Manager {
     }
 
     public void updateSubtask(Subtask subtask) {
-        subtaskList.get(subtask.getId()).setTitle(subtask.getTitle());
-        subtaskList.get(subtask.getId()).setDescription(subtask.getDescription());
-        subtaskList.get(subtask.getId()).setStatus(subtask.getStatus());
+        if (subtask == null) {
+            return;
+        }
+        subtask = subtaskList.get(subtask.getId());
+
+        subtask.setTitle(subtask.getTitle());
+        subtask.setDescription(subtask.getDescription());
+        subtask.setStatus(subtask.getStatus());
         updateEpic(epicList.get(subtask.getEpicId()));
     }
 
@@ -140,9 +143,15 @@ public class Manager {
         taskList.remove(id);
     }
 
+    /* Спасибо вам большое за эти подсказки! Действительно, в некоторых местах перемудрила саму себя. Впредь буду
+    перечитывать код несколько раз подряд, чтобы улучшать его и делать чище :) Все изменения зафиксировала в своей
+    голове. */
+
     public void deleteEpicById(int id) {
-        deleteSubtaskByEpic(id);
-        epicList.remove(id);
+        Epic epic = epicList.remove(id);
+        for (Integer subtaskId : epic.getSubtasksIds()) {
+            subtaskList.remove(subtaskId);
+        }
     }
 
     public void deleteSubtaskById(int id) {
@@ -152,27 +161,12 @@ public class Manager {
         updateEpic(epic);
     }
 
-    public void deleteSubtaskByEpic(int epicId) {
-        ArrayList<Integer> subtaskToRemove = new ArrayList<>();
-
-        for (Integer id : epicList.keySet()) {
-            if (id == epicId) {
-                subtaskToRemove.addAll(epicList.get(epicId).getSubtasksIds());
-            }
-        }
-        epicList.get(epicId).getSubtasksIds().removeAll(subtaskToRemove);
-        for (Integer subtaskId : subtaskToRemove) {
-            subtaskList.keySet().removeAll(Collections.singletonList(subtaskId));
-        }
-        updateEpic(epicList.get(epicId));
-    }
-
     public void deleteAllTasks() {
         taskList.clear();
     }
 
     public void deleteAllEpics() {
-        deleteAllSubtasks();
+        subtaskList.clear();
         epicList.clear();
     }
 
