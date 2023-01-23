@@ -71,19 +71,14 @@ public class Manager {
         return subtaskList.get(id);
     }
 
-    /* В методах по обновлению задач я решила менять именно значения полей объекта класса, т.к. мне это показалось
-    безопаснее и более гибко, чем если мы по ID напрямую заменим значение (объект) в мапе. Но я пока не разбираюсь,
-    что сколько памяти занимает, поэтому могу ошибаться. */
-
     public void updateTask(Task task) {
-        if (task == null) {
+        Task updatedTask = taskList.get(task.getId());
+        if (updatedTask == null) {
             return;
         }
-        task = taskList.get(task.getId());
-
-        task.setTitle(task.getTitle());
-        task.setDescription(task.getDescription());
-        task.setStatus(task.getStatus());
+        updatedTask.setTitle(task.getTitle());
+        updatedTask.setDescription(task.getDescription());
+        updatedTask.setStatus(task.getStatus());
     }
 
     public boolean checkIsNew(ArrayList<Status> subtaskStatus) {
@@ -105,13 +100,12 @@ public class Manager {
     }
 
     public void updateEpic(Epic epic) {
-        if (epic == null) {
+        Epic updatedEpic = epicList.get(epic.getId());
+        if (updatedEpic == null) {
             return;
         }
-        epic = epicList.get(epic.getId());
-
-        epic.setTitle(epic.getTitle());
-        epic.setDescription(epic.getDescription());
+        updatedEpic.setTitle(epic.getTitle());
+        updatedEpic.setDescription(epic.getDescription());
 
         ArrayList<Status> subtaskStatus = new ArrayList<>();
 
@@ -128,24 +122,19 @@ public class Manager {
     }
 
     public void updateSubtask(Subtask subtask) {
-        if (subtask == null) {
+        Subtask updatedSubtask = subtaskList.get(subtask.getId());
+        if (updatedSubtask == null) {
             return;
         }
-        subtask = subtaskList.get(subtask.getId());
-
-        subtask.setTitle(subtask.getTitle());
-        subtask.setDescription(subtask.getDescription());
-        subtask.setStatus(subtask.getStatus());
+        updatedSubtask.setTitle(subtask.getTitle());
+        updatedSubtask.setDescription(subtask.getDescription());
+        updatedSubtask.setStatus(subtask.getStatus());
         updateEpic(epicList.get(subtask.getEpicId()));
     }
 
     public void deleteTaskById(int id) {
         taskList.remove(id);
     }
-
-    /* Спасибо вам большое за эти подсказки! Действительно, в некоторых местах перемудрила саму себя. Впредь буду
-    перечитывать код несколько раз подряд, чтобы улучшать его и делать чище :) Все изменения зафиксировала в своей
-    голове. */
 
     public void deleteEpicById(int id) {
         Epic epic = epicList.remove(id);

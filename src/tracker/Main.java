@@ -18,7 +18,7 @@ public class Main {
         manager.createSubtask("Вымыть пол", "", 3);
         manager.createSubtask("Протереть пыль", "", 3);
         manager.createEpic("Учеба", "");
-        manager.createSubtask("Написать план ТЗ", "", 10);
+        manager.createSubtask("Написать план ТЗ", "", 6);
 
         System.out.println(manager.getTaskList());
         System.out.println(manager.getEpicList());
