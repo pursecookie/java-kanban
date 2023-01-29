@@ -1,7 +1,9 @@
 package tracker;
 
 import tracker.model.*;
-import tracker.service.Manager;
+import tracker.service.*;
+
+import static tracker.service.Managers.getDefault;
 
 public class Main {
 
@@ -10,7 +12,7 @@ public class Main {
     }
 
     static void doTest() {
-        Manager manager = new Manager();
+        TaskManager manager = getDefault();
 
         manager.createTask("Сделать зарядку", "В утреннее время - с 8:00 до 8:15");
         manager.createTask("Позвонить маме", "");
@@ -21,8 +23,23 @@ public class Main {
         manager.createSubtask("Написать план ТЗ", "", 6);
 
         System.out.println(manager.getTaskList());
-        System.out.println(manager.getEpicList());
+        System.out.println(manager.getHistory());
         System.out.println(manager.getSubtaskList());
+        System.out.println(manager.getHistory());
+        System.out.println(manager.getSubtaskList());
+        System.out.println(manager.getHistory());
+        System.out.println(manager.getTaskById(1));
+        System.out.println(manager.getHistory());
+        System.out.println(manager.getEpicById(3));
+        System.out.println(manager.getHistory());
+        System.out.println(manager.getEpicById(6));
+        System.out.println(manager.getHistory());
+        System.out.println(manager.getTaskById(1));
+        System.out.println(manager.getHistory());
+        System.out.println(manager.getSubtaskById(4));
+        System.out.println(manager.getHistory());
+        System.out.println(manager.getSubtaskById(5));
+        System.out.println(manager.getHistory());
 
         Task task = new Task("Сделать зарядку", "", 1, Status.DONE);
         manager.updateTask(task);
