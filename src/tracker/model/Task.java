@@ -6,27 +6,23 @@ public class Task {
     private String description;
     private final int id;
     private Status status;
+    private final Type type;
 
-    public Task(String title, String description, int id, Status status) {
+    public Task(int id, Type type, String title, Status status, String description) {
         this.title = title;
         this.description = description;
         this.id = id;
         this.status = status;
-    }
-
-    public Task(String title, String description, int id) {
-        this.title = title;
-        this.description = description;
-        this.id = id;
+        this.type = type;
     }
 
     @Override
     public String toString() {
-        return "Task{" +
-                "title='" + title + '\'' +
-                ", subject='" + description + '\'' +
-                ", id=" + id +
+        return type + "{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
                 ", status='" + status + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 
@@ -58,4 +54,7 @@ public class Task {
         this.status = status;
     }
 
+    public Type getType() {
+        return type;
+    }
 }

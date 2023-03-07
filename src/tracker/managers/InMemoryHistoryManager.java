@@ -1,4 +1,4 @@
-package tracker.service;
+package tracker.managers;
 
 import tracker.model.Node;
 import tracker.model.Task;

@@ -1,4 +1,4 @@
-package tracker.service;
+package tracker.managers;
 
 import tracker.model.*;
 
@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static tracker.service.Managers.getDefaultHistory;
+import static tracker.managers.Managers.getDefaultHistory;
 
 public class InMemoryTaskManager implements TaskManager {
+
     int counter = 1;
     HashMap<Integer, Task> taskList = new HashMap<>();
     HashMap<Integer, Epic> epicList = new HashMap<>();
@@ -22,21 +23,21 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void createTask(String title, String description) {
-        Task task = new Task(title, description, counter, Status.NEW);
+        Task task = new Task(counter, Type.TASK, title, Status.NEW, description);
         counter++;
         taskList.put(task.getId(), task);
     }
 
     @Override
     public void createEpic(String title, String description) {
-        Epic epic = new Epic(title, description, counter, Status.NEW, new ArrayList<>());
+        Epic epic = new Epic(counter, Type.EPIC, title, Status.NEW, description, new ArrayList<>());
         counter++;
         epicList.put(epic.getId(), epic);
     }
 
     @Override
     public void createSubtask(String title, String description, int epicId) {
-        Subtask subtask = new Subtask(title, description, counter, Status.NEW, epicId);
+        Subtask subtask = new Subtask(counter, Type.SUBTASK, title, Status.NEW, description, epicId);
         counter++;
         subtaskList.put(subtask.getId(), subtask);
 
