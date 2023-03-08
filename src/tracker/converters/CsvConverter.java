@@ -39,7 +39,7 @@ public class CsvConverter {
 
         switch (type) {
             case TASK:
-                return new Task(id, type, title, status, description);
+                return new Task(id, title, status, description);
             case EPIC:
                 ArrayList<Integer> subtaskIds = new ArrayList<>();
                 for (Subtask subtask : manager.getSubtaskList()) {
@@ -47,9 +47,9 @@ public class CsvConverter {
                         subtaskIds.add(subtask.getId());
                     }
                 }
-                return new Epic(id, type, title, status, description, subtaskIds);
+                return new Epic(id, title, status, description, subtaskIds);
             case SUBTASK:
-                return new Subtask(id, type, title, status, description, epicId);
+                return new Subtask(id, title, status, description, epicId);
         }
         return null;
     }

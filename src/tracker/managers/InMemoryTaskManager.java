@@ -23,21 +23,21 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void createTask(String title, String description) {
-        Task task = new Task(counter, Type.TASK, title, Status.NEW, description);
+        Task task = new Task(counter, title, Status.NEW, description);
         counter++;
         taskList.put(task.getId(), task);
     }
 
     @Override
     public void createEpic(String title, String description) {
-        Epic epic = new Epic(counter, Type.EPIC, title, Status.NEW, description, new ArrayList<>());
+        Epic epic = new Epic(counter, title, Status.NEW, description, new ArrayList<>());
         counter++;
         epicList.put(epic.getId(), epic);
     }
 
     @Override
     public void createSubtask(String title, String description, int epicId) {
-        Subtask subtask = new Subtask(counter, Type.SUBTASK, title, Status.NEW, description, epicId);
+        Subtask subtask = new Subtask(counter, title, Status.NEW, description, epicId);
         counter++;
         subtaskList.put(subtask.getId(), subtask);
 

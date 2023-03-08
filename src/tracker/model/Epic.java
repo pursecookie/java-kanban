@@ -5,8 +5,8 @@ import java.util.ArrayList;
 public class Epic extends Task {
     ArrayList<Integer> subtasksIds;
 
-    public Epic(int id, Type type, String title, Status status, String description, ArrayList<Integer> subtasksIds) {
-        super(id, type, title, status, description);
+    public Epic(int id, String title, Status status, String description, ArrayList<Integer> subtasksIds) {
+        super(id, title, status, description);
         this.subtasksIds = subtasksIds;
     }
 
@@ -26,4 +26,8 @@ public class Epic extends Task {
         subtasksIds.remove(id);
     }
 
+    @Override
+    public Type getType() {
+        return Type.EPIC;
+    }
 }

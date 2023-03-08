@@ -6,19 +6,17 @@ public class Task {
     private String description;
     private final int id;
     private Status status;
-    private final Type type;
 
-    public Task(int id, Type type, String title, Status status, String description) {
+    public Task(int id, String title, Status status, String description) {
         this.title = title;
         this.description = description;
         this.id = id;
         this.status = status;
-        this.type = type;
     }
 
     @Override
     public String toString() {
-        return type + "{" +
+        return getType() + "{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", status='" + status + '\'' +
@@ -55,6 +53,6 @@ public class Task {
     }
 
     public Type getType() {
-        return type;
+        return Type.TASK;
     }
 }
