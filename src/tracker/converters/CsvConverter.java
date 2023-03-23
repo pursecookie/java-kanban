@@ -4,6 +4,7 @@ import tracker.managers.FileBackedTasksManager;
 import tracker.managers.HistoryManager;
 import tracker.model.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,9 @@ public class CsvConverter {
                     task.getType() + "," +
                     task.getTitle() + "," +
                     task.getStatus() + "," +
-                    task.getDescription() + "," + "";
+                    task.getDescription() + "," +
+                    task.getDuration() + "," +
+                    task.getStartTime() + "," + "";
         }
         Subtask subtask = (Subtask) task;
         return subtask.getId() + "," +
@@ -22,6 +25,8 @@ public class CsvConverter {
                 subtask.getTitle() + "," +
                 subtask.getStatus() + "," +
                 subtask.getDescription() + "," +
+                task.getDuration() + "," +
+                task.getStartTime() + "," +
                 subtask.getEpicId();
     }
 
@@ -32,14 +37,16 @@ public class CsvConverter {
         String title = fields[2];
         Status status = Status.valueOf(fields[3]);
         String description = fields[4];
+        long duration = Long.parseLong(fields[5]);
+        Instant startTime = Instant.parse(fields[6]);
         int epicId = 0;
-        if (fields.length > 5) {
-            epicId = Integer.parseInt(fields[5]);
+        if (fields.length > 7) {
+            epicId = Integer.parseInt(fields[7]);
         }
 
         switch (type) {
             case TASK:
-                return new Task(id, title, status, description);
+                return new Task(id, title, status, description, duration, startTime);
             case EPIC:
                 ArrayList<Integer> subtaskIds = new ArrayList<>();
                 for (Subtask subtask : manager.getSubtaskList()) {
@@ -47,9 +54,9 @@ public class CsvConverter {
                         subtaskIds.add(subtask.getId());
                     }
                 }
-                return new Epic(id, title, status, description, subtaskIds);
+                return new Epic(id, title, status, description, duration, startTime, subtaskIds);
             case SUBTASK:
-                return new Subtask(id, title, status, description, epicId);
+                return new Subtask(id, title, status, description, duration, startTime, epicId);
         }
         return null;
     }

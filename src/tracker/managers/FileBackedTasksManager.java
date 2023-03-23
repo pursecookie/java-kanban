@@ -15,7 +15,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     void save() {
         try {
-            data = new File("managerData.src");
+            data = new File("managerData.csv");
             if (!data.exists()) {
                 data.createNewFile();
             }
@@ -24,7 +24,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
 
         try (PrintWriter printWriter = new PrintWriter(data, StandardCharsets.UTF_8)) {
-            printWriter.println("id,type,name,status,description,epic");
+            printWriter.println("id,type,name,status,description,duration,startTime,epic");
 
             for (Task task : taskList.values()) {
                 printWriter.println(csvConverter.toString(task));
@@ -99,7 +99,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     }
                 }
             }
-            loadedManager.counter = maxId + 1;
+            loadedManager.counter.counter = maxId;
         } catch (IOException e) {
             throw new ManagerLoadException("Ошибка при чтении файла");
         }
@@ -107,21 +107,24 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void createTask(String title, String description) {
-        super.createTask(title, description);
+    public Task createTask(Task task) {
+        Task task1 = super.createTask(task);
         save();
+        return task1;
     }
 
     @Override
-    public void createEpic(String title, String description) {
-        super.createEpic(title, description);
+    public Epic createEpic(Epic epic) {
+        Epic epic1 = super.createEpic(epic);
         save();
+        return epic1;
     }
 
     @Override
-    public void createSubtask(String title, String description, int epicId) {
-        super.createSubtask(title, description, epicId);
+    public Subtask createSubtask(Subtask subtask) {
+        Subtask subtask1 = super.createSubtask(subtask);
         save();
+        return subtask1;
     }
 
     @Override

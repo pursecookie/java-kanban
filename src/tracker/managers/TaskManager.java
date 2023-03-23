@@ -5,13 +5,14 @@ import tracker.model.Subtask;
 import tracker.model.Task;
 
 import java.util.List;
+import java.util.Set;
 
 public interface TaskManager {
-    void createTask(String title, String description);
+    Task createTask(Task task);
 
-    void createEpic(String title, String description);
+    Epic createEpic(Epic epic);
 
-    void createSubtask(String title, String description, int epicId);
+    Subtask createSubtask(Subtask subtask);
 
     List<Task> getTaskList();
 
@@ -19,17 +20,19 @@ public interface TaskManager {
 
     List<Epic> getEpicList();
 
+    List<Subtask> getSubtaskListByEpic(int epicId);
+
     Task getTaskById(int id);
 
     Epic getEpicById(int id);
 
     Subtask getSubtaskById(int id);
 
-    void updateTask(Task task);
+    void updateTask(Task updatedTask);
 
-    void updateEpic(Epic epic);
+    void updateEpic(Epic updatedEpic);
 
-    void updateSubtask(Subtask subtask);
+    void updateSubtask(Subtask updatedSubtask);
 
     void deleteTaskById(int id);
 
@@ -44,4 +47,6 @@ public interface TaskManager {
     void deleteAllSubtasks();
 
     List<Task> getHistory();
+
+    Set<Task> getPrioritizedTasks();
 }

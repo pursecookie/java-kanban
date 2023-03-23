@@ -1,0 +1,92 @@
+package managers;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import tracker.managers.FileBackedTasksManager;
+import tracker.model.Epic;
+import tracker.model.Status;
+import tracker.model.Subtask;
+import tracker.model.Task;
+
+import java.io.File;
+import java.time.Instant;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
+    File file;
+
+    @BeforeEach
+    void beforeEach() {
+        file = new File("managerData.csv");
+        taskManager = new FileBackedTasksManager();
+    }
+
+    @AfterEach
+    void afterEach() {
+        file.delete();
+    }
+
+    @DisplayName("Проверка работы по сохранению и восстановлению состояния")
+    @Test
+    public void shouldCorrectlySaveAndLoadCondition() {
+        Task testTask = taskManager.createTask(savedTaskId1);
+        Epic testEpic = taskManager.createEpic(savedEpicId2);
+        Subtask testSubtask1 = taskManager.createSubtask(savedSubtaskId3);
+        Subtask testSubtask2 = taskManager.createSubtask(savedSubtaskId4);
+
+        taskManager.getTaskById(1);
+        taskManager.getEpicById(2);
+
+        FileBackedTasksManager taskManager2 = FileBackedTasksManager.loadFromFile(file);
+
+        assertEquals(List.of(testTask), taskManager2.getTaskList(), "Задача восстановилась некорректно");
+        assertEquals(List.of(testEpic), taskManager2.getEpicList(), "Эпик восстановился некорректно");
+        assertEquals(List.of(testSubtask1, testSubtask2), taskManager2.getSubtaskList(),
+                "Подзадачи восстановились некорректно");
+
+        Task testTask2 = taskManager.createTask(new Task(counter.count(), "Заказать доставку", Status.NEW,
+                "описание задачи5", 5, Instant.ofEpochSecond(1679504400)));
+
+        assertEquals(5, testTask2.getId(), "Не совпадает новое значение счетчика для ID");
+
+        assertEquals(List.of(testTask, testEpic), taskManager2.getHistory(), "Не совпадает история просмотров");
+    }
+
+    @DisplayName("Проверка работы по сохранению и восстановлению состояния, если нет задач")
+    @Test
+    public void shouldCorrectlySaveAndLoadConditionIfTasksDoesNotExist() {
+        taskManager.createTask(savedTaskId1);
+        taskManager.deleteTaskById(1);
+
+        FileBackedTasksManager taskManager2 = FileBackedTasksManager.loadFromFile(file);
+
+        assertEquals(0, taskManager2.getTaskList().size(), "Задачи восстановились");
+    }
+
+    @DisplayName("Проверка работы по сохранению и восстановлению состояния, если у эпика нет подзадач")
+    @Test
+    public void shouldCorrectlySaveAndLoadConditionIfEpicHasNotSubtasks() {
+        Epic testEpic = taskManager.createEpic(savedEpicId2);
+
+        FileBackedTasksManager taskManager2 = FileBackedTasksManager.loadFromFile(file);
+
+        assertEquals(List.of(testEpic), taskManager2.getEpicList(), "Некорректное восстановление эпика");
+    }
+
+    @DisplayName("Проверка работы по сохранению и восстановлению состояния, если нет истории просмотров")
+    @Test
+    public void shouldCorrectlySaveAndLoadConditionIfHistoryIsEmpty() {
+        taskManager.createTask(savedTaskId1);
+        taskManager.createEpic(savedEpicId2);
+        taskManager.createSubtask(savedSubtaskId3);
+
+        FileBackedTasksManager taskManager2 = FileBackedTasksManager.loadFromFile(file);
+
+        assertEquals(0, taskManager2.getHistory().size(), "История просмотра не пустая");
+    }
+
+}
