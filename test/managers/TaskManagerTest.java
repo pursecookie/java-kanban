@@ -9,6 +9,7 @@ import tracker.model.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,6 +42,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         assertNotNull(testTask, "Задача не создалась");
         assertEquals(List.of(savedTaskId1), taskManager.getTaskList(), "Некорректное создание задачи");
+        assertEquals(Set.of(savedTaskId1), taskManager.getPrioritizedTasks(),
+                "Задача не добавилась в список задач по приоритету");
     }
 
     @DisplayName("Проверка создания задачи, если её время пересекается с другими задачами")
@@ -84,6 +87,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         assertNotNull(testSubtask, "Подзадача не создалась");
         assertEquals(List.of(savedSubtaskId3), taskManager.getSubtaskList(), "Некорректное создание подзадачи");
+        assertEquals(Set.of(savedSubtaskId3), taskManager.getPrioritizedTasks(),
+                "Подзадача не добавилась в список задач по приоритету");
     }
 
     @DisplayName("Проверка создания подзадачи, если её эпик не существует")
@@ -152,6 +157,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         assertEquals(Status.IN_PROGRESS, taskManager.getTaskList().get(0).getStatus(),
                 "Статус задачи не обновился");
+        assertEquals(Set.of(savedTaskId1), taskManager.getPrioritizedTasks(),
+                "Задача не обновилась в списке задач по приоритету");
     }
 
     @DisplayName("Проверка обновления статуса задачи, если такой задачи не существует")
@@ -170,7 +177,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     public void shouldUpdateEpicDescription() {
         taskManager.createEpic(savedEpicId2);
 
-        taskManager.updateEpic(new Epic(2,
+        taskManager.updateEpicInfo(new Epic(2,
                 "Уборка", Status.NEW, " ", 0, Instant.ofEpochSecond(0), new ArrayList<>()));
 
         assertEquals(" ", taskManager.getEpicList().get(0).getDescription(),
@@ -182,7 +189,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     public void shouldNotUpdateEpicDescriptionIfEpicDoesNotExist() {
         taskManager.createEpic(savedEpicId2);
 
-        taskManager.updateEpic(new Epic(10,
+        taskManager.updateEpicInfo(new Epic(10,
                 "Уборка", Status.NEW, " ", 0, Instant.ofEpochSecond(0), new ArrayList<>()));
 
         assertEquals("описание задачи2", taskManager.getEpicList().get(0).getDescription(),
@@ -200,6 +207,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         assertEquals(Status.DONE, taskManager.getSubtaskList().get(0).getStatus(),
                 "Статус подзадачи не обновился");
+        assertEquals(Set.of(savedSubtaskId3), taskManager.getPrioritizedTasks(),
+                "Подзадача не обновилась в списке задач по приоритету");
     }
 
     @DisplayName("Проверка обновления статуса подзадачи, если такой подзадачи не существует")
@@ -323,6 +332,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.deleteTaskById(1);
 
         assertEquals(0, taskManager.getTaskList().size(), "Задача не удалилась");
+        assertEquals(0, taskManager.getPrioritizedTasks().size(),
+                "Задача не удалилась из списка задач по приоритету");
     }
 
     @DisplayName("Проверка удаления задачи, если ID задачи неверный")
@@ -369,6 +380,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.deleteSubtaskById(3);
 
         assertEquals(0, taskManager.getSubtaskList().size(), "Подзадача не удалилась");
+        assertEquals(0, taskManager.getPrioritizedTasks().size(),
+                "Задача не удалилась из списка задач по приоритету");
         assertEquals(0, testEpic.getSubtasksIds().size(), "У эпика не удалилась данная подзадача");
     }
 
@@ -393,6 +406,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.deleteAllTasks();
 
         assertEquals(0, taskManager.getTaskList().size(), "Удалились не все задачи");
+        assertEquals(0, taskManager.getPrioritizedTasks().size(),
+                "Задачи не удалились из списка задач по приоритету");
     }
 
     @DisplayName("Проверка удаления всех эпиков")
@@ -420,6 +435,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.deleteAllSubtasks();
 
         assertEquals(0, taskManager.getSubtaskList().size(), "Удалились не все подзадачи");
+        assertEquals(0, taskManager.getPrioritizedTasks().size(),
+                "Подзадачи не удалились из списка задач по приоритету");
         assertEquals(0, testEpic.getSubtasksIds().size(), "У эпика не очистился список его подзадач");
     }
 

@@ -29,7 +29,7 @@ public class Task {
                 ", status='" + status + '\'' +
                 ", description='" + description + '\'' +
                 ", duration='" + duration + '\'' +
-                ", startTime='" + startTime.toString() + '\'' +
+                ", startTime='" + startTime + '\'' +
                 '}';
     }
 

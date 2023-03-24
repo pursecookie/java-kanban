@@ -65,6 +65,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     Subtask subtask = (Subtask) CsvConverter.fromString(row, loadedManager);
                     if (subtask != null) {
                         loadedManager.subtaskList.put(subtask.getId(), subtask);
+                        loadedManager.prioritizedTasks.add(subtask);
                         if (subtask.getId() > maxId) {
                             maxId = subtask.getId();
                         }
@@ -81,6 +82,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     Task task = CsvConverter.fromString(row, loadedManager);
                     if (task != null) {
                         loadedManager.taskList.put(task.getId(), task);
+                        loadedManager.prioritizedTasks.add(task);
                         if (task.getId() > maxId) {
                             maxId = task.getId();
                         }
@@ -155,8 +157,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void updateEpic(Epic epic) {
-        super.updateEpic(epic);
+    public void updateEpicInfo(Epic epic) {
+        super.updateEpicInfo(epic);
         save();
     }
 

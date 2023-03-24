@@ -7,6 +7,7 @@ import tracker.model.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CsvConverter {
     public String toString(Task task) {
@@ -32,13 +33,21 @@ public class CsvConverter {
 
     public static Task fromString(String value, FileBackedTasksManager manager) {
         String[] fields = value.split(",");
+
         int id = Integer.parseInt(fields[0]);
         Type type = Type.valueOf(fields[1]);
         String title = fields[2];
         Status status = Status.valueOf(fields[3]);
         String description = fields[4];
         long duration = Long.parseLong(fields[5]);
-        Instant startTime = Instant.parse(fields[6]);
+        Instant startTime;
+
+        if (Objects.equals(fields[6], "null")) {
+            startTime = null;
+        } else {
+            startTime = Instant.parse(fields[6]);
+        }
+
         int epicId = 0;
         if (fields.length > 7) {
             epicId = Integer.parseInt(fields[7]);

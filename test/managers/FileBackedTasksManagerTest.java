@@ -12,7 +12,9 @@ import tracker.model.Task;
 
 import java.io.File;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -87,6 +89,24 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
         FileBackedTasksManager taskManager2 = FileBackedTasksManager.loadFromFile(file);
 
         assertEquals(0, taskManager2.getHistory().size(), "История просмотра не пустая");
+    }
+
+    @DisplayName("Проверка работы по сохранению и восстановлению списка задач по приоритету")
+    @Test
+    public void shouldCorrectlySaveAndLoadPrioritizedTasks() {
+        taskManager.createEpic(savedEpicId2);
+        Subtask testSubtask1 = taskManager.createSubtask(savedSubtaskId3);
+        Subtask testSubtask2 = taskManager.createSubtask(savedSubtaskId4);
+        Task testTask1 = taskManager.createTask(new Task(counter.count(), "Заказать доставку", Status.NEW,
+                "описание задачи5", 15, null));
+        Task testTask2 = taskManager.createTask(savedTaskId1);
+
+        FileBackedTasksManager taskManager2 = FileBackedTasksManager.loadFromFile(file);
+
+        List<Task> sortedList = new ArrayList<>(taskManager2.getPrioritizedTasks());
+
+        assertEquals(List.of(testTask2, testSubtask2, testSubtask1, testTask1), sortedList,
+                "Список не восстановился");
     }
 
 }

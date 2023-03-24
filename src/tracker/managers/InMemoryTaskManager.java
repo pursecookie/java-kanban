@@ -6,7 +6,6 @@ import tracker.model.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static tracker.managers.Managers.getDefaultHistory;
 
@@ -14,6 +13,8 @@ public class InMemoryTaskManager implements TaskManager {
     HashMap<Integer, Task> taskList = new HashMap<>();
     HashMap<Integer, Epic> epicList = new HashMap<>();
     HashMap<Integer, Subtask> subtaskList = new HashMap<>();
+    protected final Set<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime,
+            Comparator.nullsLast(Comparator.naturalOrder())).thenComparing(Task::getId));
     HistoryManager historyManager = getDefaultHistory();
     Counter counter = new Counter();
 
@@ -26,6 +27,7 @@ public class InMemoryTaskManager implements TaskManager {
     public Task createTask(Task task) {
         searchIntersections(task);
         taskList.put(task.getId(), task);
+        prioritizedTasks.add(task);
 
         return taskList.get(task.getId());
     }
@@ -44,10 +46,14 @@ public class InMemoryTaskManager implements TaskManager {
 
         searchIntersections(subtask);
         subtaskList.put(subtask.getId(), subtask);
+        prioritizedTasks.add(subtask);
 
         Epic epic = epicList.get(subtask.getEpicId());
+
         epic.addSubtaskId(subtask.getId());
-        updateEpic(epic);
+        updateEpicStatus(epicList.get(subtask.getEpicId()));
+        updateEpicDuration(epicList.get(subtask.getEpicId()));
+
         return subtaskList.get(subtask.getId());
     }
 
@@ -68,28 +74,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Set<Task> getPrioritizedTasks() {
-        List<Task> allTasks = new ArrayList<>();
-
-        allTasks.addAll(taskList.values());
-        allTasks.addAll(subtaskList.values());
-
-        List<Task> tasksWithoutStartTime = new ArrayList<>();
-
-        for (Task task : allTasks) {
-            if (task.getStartTime() == null) {
-                tasksWithoutStartTime.add(task);
-            }
-        }
-
-        allTasks.removeAll(tasksWithoutStartTime);
-
-        Set<Task> sortedTasks = allTasks.stream()
-                .sorted(Comparator.comparing(Task::getStartTime))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        sortedTasks.addAll(tasksWithoutStartTime);
-
-        return sortedTasks;
+        return prioritizedTasks;
     }
 
     public void searchIntersections(Task task) {
@@ -97,7 +82,7 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
 
-        List<Task> allTasks = new ArrayList<>(getPrioritizedTasks());
+        List<Task> allTasks = new ArrayList<>(prioritizedTasks);
 
         for (Task taskInList : allTasks) {
             if (taskInList.getStartTime() == null) {
@@ -157,6 +142,11 @@ public class InMemoryTaskManager implements TaskManager {
         task.setDescription(updatedTask.getDescription());
         task.setStatus(updatedTask.getStatus());
         task.setDuration(updatedTask.getDuration());
+
+        /* Подскажите, почему моя задача обновляется в prioritizedTasks автоматически, без вызова команды ниже?
+        Я это проверяю в тесте shouldUpdateTaskStatus()
+
+        prioritizedTasks.add(task); */
     }
 
     public boolean checkIsNew(ArrayList<Status> subtaskStatus) {
@@ -178,7 +168,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateEpic(Epic updatedEpic) {
+    public void updateEpicInfo(Epic updatedEpic) {
         if (!epicList.containsKey(updatedEpic.getId())) {
             return;
         }
@@ -187,14 +177,35 @@ public class InMemoryTaskManager implements TaskManager {
         epic.setTitle(updatedEpic.getTitle());
         epic.setDescription(updatedEpic.getDescription());
 
+        updateEpicStatus(updatedEpic);
+        updateEpicDuration(updatedEpic);
+
+    }
+
+    /* Я правильно понимаю, что методы updateEpicStatus и updateEpicDuration не должны быть в классе-родителе
+    TaskManager? Т.к. они специфичны именно для наследника InMemoryTaskManager */
+    private void updateEpicStatus(Epic updatedEpic) {
         ArrayList<Status> subtaskStatus = new ArrayList<>();
 
+        for (Integer subtaskId : epicList.get(updatedEpic.getId()).getSubtasksIds()) {
+            subtaskStatus.add(subtaskList.get(subtaskId).getStatus());
+        }
+
+        if (epicList.get(updatedEpic.getId()).getSubtasksIds().isEmpty() || checkIsNew(subtaskStatus)) {
+            epicList.get(updatedEpic.getId()).setStatus(Status.NEW);
+        } else if (checkIsDone(subtaskStatus)) {
+            epicList.get(updatedEpic.getId()).setStatus(Status.DONE);
+        } else {
+            epicList.get(updatedEpic.getId()).setStatus(Status.IN_PROGRESS);
+        }
+    }
+
+    private void updateEpicDuration(Epic updatedEpic) {
+        Epic epic = epicList.get(updatedEpic.getId());
         Instant epicStartTime = epic.getStartTime();
         Instant epicEndTime = epic.getEndTime();
 
         for (Integer subtaskId : epicList.get(updatedEpic.getId()).getSubtasksIds()) {
-            subtaskStatus.add(subtaskList.get(subtaskId).getStatus());
-
             if (epicStartTime == Instant.EPOCH || subtaskList.get(subtaskId).getStartTime().isBefore(epicStartTime)) {
                 epicStartTime = subtaskList.get(subtaskId).getStartTime();
             }
@@ -208,16 +219,8 @@ public class InMemoryTaskManager implements TaskManager {
         epic.setDuration(epicDuration);
         epic.setStartTime(epicStartTime);
         epic.setEndTime(epicEndTime);
-
-        if (epicList.get(updatedEpic.getId()).getSubtasksIds().isEmpty() || checkIsNew(subtaskStatus)) {
-            epicList.get(updatedEpic.getId()).setStatus(Status.NEW);
-        } else if (checkIsDone(subtaskStatus)) {
-            epicList.get(updatedEpic.getId()).setStatus(Status.DONE);
-        } else {
-            epicList.get(updatedEpic.getId()).setStatus(Status.IN_PROGRESS);
-        }
-
     }
+
 
     @Override
     public void updateSubtask(Subtask updatedSubtask) {
@@ -237,7 +240,8 @@ public class InMemoryTaskManager implements TaskManager {
         subtask.setStatus(updatedSubtask.getStatus());
         subtask.setDuration(updatedSubtask.getDuration());
 
-        updateEpic(epicList.get(updatedSubtask.getEpicId()));
+        updateEpicStatus(epicList.get(updatedSubtask.getEpicId()));
+        updateEpicDuration(epicList.get(updatedSubtask.getEpicId()));
     }
 
     @Override
@@ -246,6 +250,7 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
 
+        prioritizedTasks.remove(taskList.get(id));
         taskList.remove(id);
         historyManager.remove(id);
     }
@@ -273,14 +278,18 @@ public class InMemoryTaskManager implements TaskManager {
 
         Epic epic = epicList.get(subtaskList.get(id).getEpicId());
         epic.removeSubtask(id);
+
+        prioritizedTasks.remove(subtaskList.get(id));
         subtaskList.remove(id);
         historyManager.remove(id);
-        updateEpic(epic);
+        updateEpicStatus(epicList.get(epic.getId()));
+        updateEpicDuration(epicList.get(epic.getId()));
     }
 
     @Override
     public void deleteAllTasks() {
         for (Task task : taskList.values()) {
+            prioritizedTasks.remove(task);
             historyManager.remove(task.getId());
         }
         taskList.clear();
@@ -301,13 +310,18 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteAllSubtasks() {
         for (Subtask subtask : subtaskList.values()) {
+            prioritizedTasks.remove(subtask);
             historyManager.remove(subtask.getId());
         }
+
         for (Integer epicId : epicList.keySet()) {
             Epic epic = epicList.get(epicId);
             epic.cleanSubtaskIds();
+            updateEpicStatus(epicList.get(epic.getId()));
+            updateEpicDuration(epicList.get(epic.getId()));
         }
         subtaskList.clear();
+
     }
 
 }
