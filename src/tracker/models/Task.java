@@ -1,6 +1,6 @@
-package tracker.model;
+package tracker.models;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -10,9 +10,9 @@ public class Task {
     protected final int id;
     protected Status status;
     protected long duration;
-    protected Instant startTime;
+    protected LocalDateTime startTime;
 
-    public Task(int id, String title, Status status, String description, long duration, Instant startTime) {
+    public Task(int id, String title, Status status, String description, long duration, LocalDateTime startTime) {
         this.title = title;
         this.description = description;
         this.id = id;
@@ -38,8 +38,9 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return id == task.id && Objects.equals(title, task.title) && Objects.equals(description, task.description) &&
-                status == task.status;
+        return id == task.id && Objects.equals(title, task.title) && status == task.status &&
+                Objects.equals(description, task.description) && duration == task.duration &&
+                Objects.equals(startTime, task.startTime);
     }
 
     public String getDescription() {
@@ -78,20 +79,20 @@ public class Task {
         this.duration = duration;
     }
 
-    public Instant getStartTime() {
+    public LocalDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Instant startTime) {
+    public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public Type getType() {
-        return Type.TASK;
+    public TaskType getType() {
+        return TaskType.TASK;
     }
 
-    public Instant getEndTime() {
-        return startTime.plusSeconds(duration * 60);
+    public LocalDateTime getEndTime() {
+        return startTime.plusMinutes(duration);
     }
 
 }

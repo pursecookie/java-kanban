@@ -1,21 +1,21 @@
 package tracker.managers;
 
 import tracker.exceptions.ManagerValidateException;
-import tracker.model.*;
+import tracker.models.*;
 
 import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static tracker.managers.Managers.getDefaultHistory;
 
 public class InMemoryTaskManager implements TaskManager {
-    HashMap<Integer, Task> taskList = new HashMap<>();
-    HashMap<Integer, Epic> epicList = new HashMap<>();
-    HashMap<Integer, Subtask> subtaskList = new HashMap<>();
+    public HashMap<Integer, Task> taskList = new HashMap<>();
+    public HashMap<Integer, Epic> epicList = new HashMap<>();
+    public HashMap<Integer, Subtask> subtaskList = new HashMap<>();
     protected final Set<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime,
             Comparator.nullsLast(Comparator.naturalOrder())).thenComparing(Task::getId));
-    HistoryManager historyManager = getDefaultHistory();
+    public HistoryManager historyManager = getDefaultHistory();
     Counter counter = new Counter();
 
     @Override
@@ -77,7 +77,7 @@ public class InMemoryTaskManager implements TaskManager {
         return prioritizedTasks;
     }
 
-    public void searchIntersections(Task task) {
+    private void searchIntersections(Task task) {
         if (task.getStartTime() == null) {
             return;
         }
@@ -97,6 +97,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+    @Override
     public List<Subtask> getSubtaskListByEpic(int epicId) {
         List<Subtask> getEpicSubtasks = new ArrayList<>();
         for (Integer subtaskId : subtaskList.keySet()) {
@@ -142,14 +143,9 @@ public class InMemoryTaskManager implements TaskManager {
         task.setDescription(updatedTask.getDescription());
         task.setStatus(updatedTask.getStatus());
         task.setDuration(updatedTask.getDuration());
-
-        /* Подскажите, почему моя задача обновляется в prioritizedTasks автоматически, без вызова команды ниже?
-        Я это проверяю в тесте shouldUpdateTaskStatus()
-
-        prioritizedTasks.add(task); */
     }
 
-    public boolean checkIsNew(ArrayList<Status> subtaskStatus) {
+    private boolean checkIsNew(ArrayList<Status> subtaskStatus) {
         for (Status status : subtaskStatus) {
             if (status != Status.NEW) {
                 return false;
@@ -158,7 +154,7 @@ public class InMemoryTaskManager implements TaskManager {
         return true;
     }
 
-    public boolean checkIsDone(ArrayList<Status> subtaskStatus) {
+    private boolean checkIsDone(ArrayList<Status> subtaskStatus) {
         for (Status status : subtaskStatus) {
             if (status != Status.DONE) {
                 return false;
@@ -182,8 +178,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     }
 
-    /* Я правильно понимаю, что методы updateEpicStatus и updateEpicDuration не должны быть в классе-родителе
-    TaskManager? Т.к. они специфичны именно для наследника InMemoryTaskManager */
     private void updateEpicStatus(Epic updatedEpic) {
         ArrayList<Status> subtaskStatus = new ArrayList<>();
 
@@ -202,19 +196,33 @@ public class InMemoryTaskManager implements TaskManager {
 
     private void updateEpicDuration(Epic updatedEpic) {
         Epic epic = epicList.get(updatedEpic.getId());
-        Instant epicStartTime = epic.getStartTime();
-        Instant epicEndTime = epic.getEndTime();
+        LocalDateTime epicStartTime = epic.getStartTime();
+        LocalDateTime epicEndTime = epic.getEndTime();
 
         for (Integer subtaskId : epicList.get(updatedEpic.getId()).getSubtasksIds()) {
-            if (epicStartTime == Instant.EPOCH || subtaskList.get(subtaskId).getStartTime().isBefore(epicStartTime)) {
+            if (epicStartTime == null || subtaskList.get(subtaskId).getStartTime().isBefore(epicStartTime)) {
                 epicStartTime = subtaskList.get(subtaskId).getStartTime();
             }
-            if (subtaskList.get(subtaskId).getEndTime().isAfter(epicEndTime)) {
+            if (epicEndTime == null || subtaskList.get(subtaskId).getEndTime().isAfter(epicEndTime)) {
                 epicEndTime = subtaskList.get(subtaskId).getEndTime();
             }
         }
 
-        long epicDuration = (Duration.between(epicStartTime, epicEndTime)).toMinutes();
+    /* У нас с ребятами из группы возник спор, как именно рассчитывается duration у эпика. Как по мне, логично
+    рассчитывать его как время между началом самой ранней подзадачи эпика и окончанием самой поздней подзадачи
+    (что является началом и окончанием эпика), как я и сделала. Но большинство считают, что надо просто сложить duration
+    всех подзадач эпика, аргументируя это тем, что если у эпика одна подзадача имеет диапазон времени 8:00-8:15, а
+    вторая 10:30-11:00, то в этот свободный промежуток времени (8:15-10:30) можно поставить другие задачи. Но зачем нам
+    это в контексте эпика, если он не участвует в проверке на пересечения? И нельзя сказать, что в приведенном выше
+    примере эпик длится суммарно 45 минут. Он длится с 8:15 по 11:00.
+    Хотелось бы узнать ваше мнение на этот счет. И предусмотрены ли оба эти варианта как зачет по ТЗ? */
+        long epicDuration;
+
+        if (epicStartTime == null && epicEndTime == null) {
+            epicDuration = 0;
+        } else {
+            epicDuration = (Duration.between(epicStartTime, epicEndTime)).toMinutes();
+        }
 
         epic.setDuration(epicDuration);
         epic.setStartTime(epicStartTime);

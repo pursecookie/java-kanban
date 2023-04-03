@@ -1,7 +1,7 @@
 package tracker.managers;
 
-import tracker.model.Node;
-import tracker.model.Task;
+import tracker.models.Node;
+import tracker.models.Task;
 
 import java.util.*;
 
@@ -33,7 +33,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         removeNode(historyMap.remove(id));
     }
 
-    Node<Task> linkLast(Task task) {
+    private Node<Task> linkLast(Task task) {
         Node<Task> tail = historyLinkedList.tail;
         Node<Task> node = new Node<>(tail, task, null);
         historyLinkedList.tail = node;
@@ -46,7 +46,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         return node;
     }
 
-    List<Task> getTasks() {
+    private List<Task> getTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
 
         Node<Task> node = historyLinkedList.head;
@@ -57,7 +57,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         return tasks;
     }
 
-    void removeNode(Node<Task> node) {
+    private void removeNode(Node<Task> node) {
         if (node == null) {
             return;
         }

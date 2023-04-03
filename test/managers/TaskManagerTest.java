@@ -4,9 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import tracker.managers.TaskManager;
-import tracker.model.*;
+import tracker.models.*;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,13 +27,13 @@ abstract class TaskManagerTest<T extends TaskManager> {
     void createSavedTasks() {
         counter = new Counter();
         savedTaskId1 = new Task(counter.count(), "Сделать зарядку", Status.NEW, "описание задачи1",
-                15, Instant.ofEpochSecond(1679472000));
+                15, LocalDateTime.of(2023, Month.MARCH, 22, 8, 0));
         savedEpicId2 = new Epic(counter.count(), "Уборка", Status.NEW, "описание задачи2",
-                0, Instant.ofEpochSecond(0), new ArrayList<>());
+                0, null, new ArrayList<>());
         savedSubtaskId3 = new Subtask(counter.count(), "Вымыть пол", Status.NEW, "описание задачи3",
-                20, Instant.ofEpochSecond(1679479200), 2);
+                20, LocalDateTime.of(2023, Month.MARCH, 22, 10, 0), 2);
         savedSubtaskId4 = new Subtask(counter.count(), "Вынести мусор", Status.NEW, "описание задачи4",
-                10, Instant.ofEpochSecond(1679475600), 2);
+                10, LocalDateTime.of(2023, Month.MARCH, 22, 9, 0), 2);
     }
 
     @DisplayName("Проверка создания задачи")
@@ -54,7 +55,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
         final RuntimeException exception = assertThrows(
                 RuntimeException.class,
                 () -> taskManager.createTask(new Task(counter.count(), "Позвонить маме", Status.NEW,
-                        "описание задачи2", 30, Instant.ofEpochSecond(1679472600)))
+                        "описание задачи2", 30,
+                        LocalDateTime.of(2023, Month.MARCH, 22, 8, 10)))
         );
 
         assertEquals("Время задачи пересекается с другими задачами", exception.getMessage());
@@ -65,7 +67,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     public void shouldReturnTaskEndTime() {
         Task testTask = taskManager.createTask(savedTaskId1);
 
-        assertEquals(Instant.ofEpochSecond(1679472900), testTask.getEndTime(),
+        assertEquals(LocalDateTime.of(2023, Month.MARCH, 22, 8, 15), testTask.getEndTime(),
                 "Неверный расчет времени окончания задачи");
     }
 
@@ -151,9 +153,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     public void shouldUpdateTaskStatus() {
         taskManager.createTask(savedTaskId1);
+        savedTaskId1.setStatus(Status.IN_PROGRESS);
 
-        taskManager.updateTask(new Task(1, "Сделать зарядку", Status.IN_PROGRESS, "описание задачи1",
-                15, Instant.ofEpochSecond(1679472000)));
+        taskManager.updateTask(savedTaskId1);
 
         assertEquals(Status.IN_PROGRESS, taskManager.getTaskList().get(0).getStatus(),
                 "Статус задачи не обновился");
@@ -167,7 +169,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createTask(savedTaskId1);
 
         taskManager.updateTask(new Task(10, "Сделать зарядку", Status.IN_PROGRESS, "описание задачи1",
-                15, Instant.ofEpochSecond(1679472000)));
+                15, LocalDateTime.of(2023, Month.MARCH, 22, 8, 0)));
 
         assertEquals(Status.NEW, taskManager.getTaskList().get(0).getStatus(), "Статус задачи обновился");
     }
@@ -176,9 +178,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     public void shouldUpdateEpicDescription() {
         taskManager.createEpic(savedEpicId2);
+        savedEpicId2.setDescription(" ");
 
-        taskManager.updateEpicInfo(new Epic(2,
-                "Уборка", Status.NEW, " ", 0, Instant.ofEpochSecond(0), new ArrayList<>()));
+        taskManager.updateEpicInfo(savedEpicId2);
 
         assertEquals(" ", taskManager.getEpicList().get(0).getDescription(),
                 "Описание эпика не обновилось");
@@ -190,7 +192,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createEpic(savedEpicId2);
 
         taskManager.updateEpicInfo(new Epic(10,
-                "Уборка", Status.NEW, " ", 0, Instant.ofEpochSecond(0), new ArrayList<>()));
+                "Уборка", Status.NEW, " ", 0, null, new ArrayList<>()));
 
         assertEquals("описание задачи2", taskManager.getEpicList().get(0).getDescription(),
                 "Описание эпика обновилось");
@@ -201,9 +203,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
     public void shouldUpdateSubtaskStatus() {
         taskManager.createEpic(savedEpicId2);
         taskManager.createSubtask(savedSubtaskId3);
+        savedSubtaskId3.setStatus(Status.DONE);
 
-        taskManager.updateSubtask(new Subtask(3, "Вымыть пол", Status.DONE, "описание задачи3",
-                20, Instant.ofEpochSecond(1679479200), 2));
+        taskManager.updateSubtask(savedSubtaskId3);
 
         assertEquals(Status.DONE, taskManager.getSubtaskList().get(0).getStatus(),
                 "Статус подзадачи не обновился");
@@ -217,8 +219,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createEpic(savedEpicId2);
         taskManager.createSubtask(savedSubtaskId3);
 
-        taskManager.updateSubtask(new Subtask(10, "Вымыть пол", Status.DONE, "описание задачи3",
-                20, Instant.ofEpochSecond(1679479200), 2));
+        taskManager.updateSubtask(savedSubtaskId4);
 
         assertEquals(Status.NEW, taskManager.getSubtaskList().get(0).getStatus(), "Статус подзадачи обновился");
     }
@@ -241,10 +242,11 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createSubtask(savedSubtaskId3);
         taskManager.createSubtask(savedSubtaskId4);
 
-        taskManager.updateSubtask(new Subtask(4, "Вынести мусор", Status.IN_PROGRESS,
-                "описание задачи4", 10, Instant.ofEpochSecond(1679475600), 2));
-        taskManager.updateSubtask(new Subtask(4, "Вынести мусор", Status.NEW,
-                "описание задачи4", 10, Instant.ofEpochSecond(1679475600), 2));
+        savedSubtaskId4.setStatus(Status.IN_PROGRESS);
+        taskManager.updateSubtask(savedSubtaskId4);
+
+        savedSubtaskId4.setStatus(Status.NEW);
+        taskManager.updateSubtask(savedSubtaskId4);
 
         assertEquals(Status.NEW, taskManager.getEpicList().get(0).getStatus(), "Статус эпика не NEW");
     }
@@ -255,11 +257,11 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createEpic(savedEpicId2);
         taskManager.createSubtask(savedSubtaskId3);
         taskManager.createSubtask(savedSubtaskId4);
+        savedSubtaskId3.setStatus(Status.DONE);
+        savedSubtaskId4.setStatus(Status.DONE);
 
-        taskManager.updateSubtask(new Subtask(3, "Вымыть пол", Status.DONE, "описание задачи3",
-                20, Instant.ofEpochSecond(1679479200), 2));
-        taskManager.updateSubtask(new Subtask(4, "Вынести мусор", Status.DONE, "описание задачи4",
-                10, Instant.ofEpochSecond(1679475600), 2));
+        taskManager.updateSubtask(savedSubtaskId3);
+        taskManager.updateSubtask(savedSubtaskId4);
 
         assertEquals(Status.DONE, taskManager.getEpicList().get(0).getStatus(), "Статус эпика не DONE");
     }
@@ -270,9 +272,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createEpic(savedEpicId2);
         taskManager.createSubtask(savedSubtaskId3);
         taskManager.createSubtask(savedSubtaskId4);
+        savedSubtaskId3.setStatus(Status.DONE);
 
-        taskManager.updateSubtask(new Subtask(3, "Вымыть пол", Status.DONE, "описание задачи3",
-                20, Instant.ofEpochSecond(1679479200), 2));
+        taskManager.updateSubtask(savedSubtaskId3);
 
         assertEquals(Status.IN_PROGRESS, taskManager.getEpicList().get(0).getStatus(),
                 "Статус эпика не IN PROGRESS");
@@ -284,9 +286,9 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createEpic(savedEpicId2);
         taskManager.createSubtask(savedSubtaskId3);
         taskManager.createSubtask(savedSubtaskId4);
+        savedSubtaskId3.setStatus(Status.IN_PROGRESS);
 
-        taskManager.updateSubtask(new Subtask(3, "Вымыть пол", Status.IN_PROGRESS, "описание задачи3",
-                20, Instant.ofEpochSecond(1679479200), 2));
+        taskManager.updateSubtask(savedSubtaskId3);
 
         assertEquals(Status.IN_PROGRESS, taskManager.getEpicList().get(0).getStatus(),
                 "Статус эпика не IN PROGRESS");
@@ -309,7 +311,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createSubtask(savedSubtaskId3);
         taskManager.createSubtask(savedSubtaskId4);
 
-        assertEquals(Instant.ofEpochSecond(1679475600), testEpic.getStartTime(),
+        assertEquals(LocalDateTime.of(2023, Month.MARCH, 22, 9, 0), testEpic.getStartTime(),
                 "Дата начала эпика рассчитана неверно");
     }
 
@@ -320,7 +322,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createSubtask(savedSubtaskId3);
         taskManager.createSubtask(savedSubtaskId4);
 
-        assertEquals(Instant.ofEpochSecond(1679480400), testEpic.getEndTime(),
+        assertEquals(LocalDateTime.of(2023, Month.MARCH, 22, 10, 20), testEpic.getEndTime(),
                 "Дата окончания эпика рассчитана неверно");
     }
 
@@ -401,7 +403,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     public void shouldDeleteAllTasks() {
         taskManager.createTask(savedTaskId1);
         taskManager.createTask(new Task(counter.count(), "Позвонить маме", Status.NEW, "описание задачи5",
-                50, Instant.ofEpochSecond(1679508000)));
+                50, LocalDateTime.of(2023, Month.MARCH, 22, 13, 0)));
 
         taskManager.deleteAllTasks();
 
@@ -417,12 +419,12 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createSubtask(savedSubtaskId3);
         taskManager.createSubtask(savedSubtaskId4);
         taskManager.createEpic(new Epic(counter.count(), "Учеба", Status.NEW, "описание задачи5",
-                50, Instant.ofEpochSecond(1679508000), new ArrayList<>()));
+                50, null, new ArrayList<>()));
 
         taskManager.deleteAllEpics();
 
         assertEquals(0, taskManager.getEpicList().size(), "Удалились не все эпики");
-        assertEquals(0, taskManager.getSubtaskList().size(), "Подзадачи данного эпика не удалились");
+        assertEquals(0, taskManager.getSubtaskList().size(), "Подзадачи всех эпиков не удалились");
     }
 
     @DisplayName("Проверка удаления всех подзадач")

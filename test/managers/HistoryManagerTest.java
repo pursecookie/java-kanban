@@ -4,9 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import tracker.managers.HistoryManager;
-import tracker.model.*;
+import tracker.models.*;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,11 +25,11 @@ public class HistoryManagerTest {
         historyManager = getDefaultHistory();
         counter = new Counter();
         savedTaskId1 = new Task(counter.count(), "Сделать зарядку", Status.NEW, "описание задачи1",
-                15, Instant.ofEpochSecond(1679472000));
+                15, LocalDateTime.of(2023, Month.MARCH, 22, 8, 0));
         savedTaskId2 = new Task(counter.count(), "Заказать доставку", Status.NEW, "описание задачи2",
-                5, Instant.ofEpochSecond(1679504400));
+                5, LocalDateTime.of(2023, Month.MARCH, 22, 10, 0));
         savedTaskId3 = new Task(counter.count(), "Позвонить маме", Status.NEW, "описание задачи3",
-                50, Instant.ofEpochSecond(1679508000));
+                50, LocalDateTime.of(2023, Month.MARCH, 22, 15, 30));
     }
 
     @DisplayName("Проверка добавления задачи в историю просмотров")

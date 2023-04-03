@@ -1,6 +1,6 @@
 package tracker.managers;
 
-import tracker.model.Task;
+import tracker.models.Task;
 
 import java.util.List;
 

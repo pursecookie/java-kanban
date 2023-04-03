@@ -2,7 +2,7 @@ package tracker.managers;
 
 import tracker.converters.CsvConverter;
 import tracker.exceptions.*;
-import tracker.model.*;
+import tracker.models.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +13,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     File data;
     static CsvConverter csvConverter = new CsvConverter();
 
-    void save() {
+    public void save() {
         try {
             data = new File("managerData.csv");
             if (!data.exists()) {

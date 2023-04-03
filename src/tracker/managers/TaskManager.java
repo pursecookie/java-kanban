@@ -1,8 +1,8 @@
 package tracker.managers;
 
-import tracker.model.Epic;
-import tracker.model.Subtask;
-import tracker.model.Task;
+import tracker.models.Epic;
+import tracker.models.Subtask;
+import tracker.models.Task;
 
 import java.util.List;
 import java.util.Set;

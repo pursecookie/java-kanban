@@ -5,16 +5,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import tracker.managers.FileBackedTasksManager;
-import tracker.model.Epic;
-import tracker.model.Status;
-import tracker.model.Subtask;
-import tracker.model.Task;
+import tracker.models.Epic;
+import tracker.models.Status;
+import tracker.models.Subtask;
+import tracker.models.Task;
 
 import java.io.File;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -51,7 +51,8 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
                 "Подзадачи восстановились некорректно");
 
         Task testTask2 = taskManager.createTask(new Task(counter.count(), "Заказать доставку", Status.NEW,
-                "описание задачи5", 5, Instant.ofEpochSecond(1679504400)));
+                "описание задачи5", 5,
+                LocalDateTime.of(2023, Month.MARCH, 22, 18, 0)));
 
         assertEquals(5, testTask2.getId(), "Не совпадает новое значение счетчика для ID");
 

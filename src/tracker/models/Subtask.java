@@ -1,12 +1,12 @@
-package tracker.model;
+package tracker.models;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 public class Subtask extends Task {
 
     int epicId;
 
-    public Subtask(int id, String title, Status status, String description, long duration, Instant startTime,
+    public Subtask(int id, String title, Status status, String description, long duration, LocalDateTime startTime,
                    int epicId) {
         super(id, title, status, description, duration, startTime);
         this.epicId = epicId;
@@ -17,7 +17,7 @@ public class Subtask extends Task {
     }
 
     @Override
-    public Type getType() {
-        return Type.SUBTASK;
+    public TaskType getType() {
+        return TaskType.SUBTASK;
     }
 }

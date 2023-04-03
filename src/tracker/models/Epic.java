@@ -1,13 +1,13 @@
-package tracker.model;
+package tracker.models;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
     ArrayList<Integer> subtasksIds;
-    protected Instant endTime;
+    protected LocalDateTime endTime;
 
-    public Epic(int id, String title, Status status, String description, long duration, Instant startTime,
+    public Epic(int id, String title, Status status, String description, long duration, LocalDateTime startTime,
                 ArrayList<Integer> subtasksIds) {
         super(id, title, status, description, duration, startTime);
         this.subtasksIds = subtasksIds;
@@ -29,13 +29,17 @@ public class Epic extends Task {
         subtasksIds.remove(id);
     }
 
-    public void setEndTime(Instant endTime) {
+    public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 
     @Override
-    public Type getType() {
-        return Type.EPIC;
+    public TaskType getType() {
+        return TaskType.EPIC;
     }
 
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
 }

@@ -1,4 +1,4 @@
-package tracker.model;
+package tracker.models;
 
 public class Counter {
     public int counter = 1;

@@ -2,16 +2,16 @@ package tracker.converters;
 
 import tracker.managers.FileBackedTasksManager;
 import tracker.managers.HistoryManager;
-import tracker.model.*;
+import tracker.models.*;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class CsvConverter {
     public String toString(Task task) {
-        if (task.getType() == Type.TASK || task.getType() == Type.EPIC) {
+        if (task.getType() == TaskType.TASK || task.getType() == TaskType.EPIC) {
             return task.getId() + "," +
                     task.getType() + "," +
                     task.getTitle() + "," +
@@ -35,17 +35,17 @@ public class CsvConverter {
         String[] fields = value.split(",");
 
         int id = Integer.parseInt(fields[0]);
-        Type type = Type.valueOf(fields[1]);
+        TaskType taskType = TaskType.valueOf(fields[1]);
         String title = fields[2];
         Status status = Status.valueOf(fields[3]);
         String description = fields[4];
         long duration = Long.parseLong(fields[5]);
-        Instant startTime;
+        LocalDateTime startTime;
 
         if (Objects.equals(fields[6], "null")) {
             startTime = null;
         } else {
-            startTime = Instant.parse(fields[6]);
+            startTime = LocalDateTime.parse(fields[6]);
         }
 
         int epicId = 0;
@@ -53,7 +53,7 @@ public class CsvConverter {
             epicId = Integer.parseInt(fields[7]);
         }
 
-        switch (type) {
+        switch (taskType) {
             case TASK:
                 return new Task(id, title, status, description, duration, startTime);
             case EPIC:
@@ -70,9 +70,9 @@ public class CsvConverter {
         return null;
     }
 
-    public static String historyToString(HistoryManager manager) {
+    public static String historyToString(HistoryManager historyManager) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (Task task : manager.getHistory()) {
+        for (Task task : historyManager.getHistory()) {
             stringBuilder.append(task.getId()).append(",");
         }
         return String.valueOf(stringBuilder);

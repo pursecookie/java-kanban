@@ -1,4 +1,4 @@
-package tracker.model;
+package tracker.models;
 
 public class Node <T> {
 
