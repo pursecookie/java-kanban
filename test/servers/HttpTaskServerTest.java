@@ -5,7 +5,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import tracker.adapters.*;
 import tracker.managers.*;
 import tracker.models.*;
 import tracker.servers.*;
@@ -15,11 +14,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,11 +32,7 @@ public class HttpTaskServerTest {
     public static final int PORT = 8078;
     public static final String KEY = "testSaving";
     private TaskManager httpTaskManager;
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(Duration.class, new DurationAdapter())
-            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-            .registerTypeAdapter(HistoryManager.class, new HistoryManagerAdapter((HttpTaskManager) httpTaskManager))
-            .create();
+    private Gson gson;
     Task savedTaskId1;
     Epic savedEpicId2;
     Subtask savedSubtaskId3;
@@ -54,6 +50,8 @@ public class HttpTaskServerTest {
         httpTaskServer.start();
 
         client = HttpClient.newHttpClient();
+
+        gson = Managers.getGson((HttpTaskManager) httpTaskManager);
 
         savedTaskId1 = new Task(1, "Сделать зарядку", Status.NEW, "описание задачи1",
                 15, LocalDateTime.of(2023, Month.MARCH, 22, 8, 0));
@@ -88,7 +86,7 @@ public class HttpTaskServerTest {
     @DisplayName("Проверка обработки запросов с несуществующим эндпоинтом")
     @Test
     void shouldNotDoAnythingIfEndpointDoesNotExists() {
-        URI url = URI.create("http://localhost:8080/tasks/epic/subtask");
+        URI url = URI.create("http://localhost:8080/tasks/epics");
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
@@ -104,7 +102,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         Task testTask = gson.fromJson(response.body(), Task.class);
 
@@ -121,7 +119,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         Epic testEpic = gson.fromJson(response.body(), Epic.class);
 
@@ -139,7 +137,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         Subtask testSubtask = gson.fromJson(response.body(), Subtask.class);
 
@@ -157,7 +155,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         JsonElement jsonElement = JsonParser.parseString(response.body());
         JsonArray jsonArray = jsonElement.getAsJsonArray();
@@ -181,7 +179,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         JsonElement jsonElement = JsonParser.parseString(response.body());
         JsonArray jsonArray = jsonElement.getAsJsonArray();
@@ -206,7 +204,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         JsonElement jsonElement = JsonParser.parseString(response.body());
         JsonArray jsonArray = jsonElement.getAsJsonArray();
@@ -231,7 +229,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         JsonElement jsonElement = JsonParser.parseString(response.body());
         JsonArray jsonArray = jsonElement.getAsJsonArray();
@@ -260,7 +258,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         JsonElement jsonElement = JsonParser.parseString(response.body());
         JsonArray jsonArray = jsonElement.getAsJsonArray();
@@ -280,7 +278,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
 
         JsonElement jsonElement = JsonParser.parseString(response.body());
         JsonArray jsonArray = jsonElement.getAsJsonArray();
@@ -297,7 +295,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
         assertEquals("Задача успешно создана!", response.body(), "Задача не создалась");
     }
 
@@ -310,7 +308,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
         assertEquals("Эпик успешно создан!", response.body(), "Эпик не создался");
     }
 
@@ -325,7 +323,7 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(body).build();
         HttpResponse<String> response = getResponse(request);
 
-        assertEquals(200, response.statusCode());
+        assertEquals(HTTP_OK, response.statusCode());
         assertEquals("Подзадача успешно создана!", response.body(), "Подзадача не создалась");
     }
 

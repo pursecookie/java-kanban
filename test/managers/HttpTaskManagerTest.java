@@ -1,14 +1,10 @@
 package managers;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import tracker.adapters.DurationAdapter;
-import tracker.adapters.HistoryManagerAdapter;
-import tracker.adapters.LocalDateTimeAdapter;
 import tracker.managers.*;
 import tracker.models.Epic;
 import tracker.models.Status;
@@ -18,7 +14,6 @@ import tracker.servers.KVServer;
 import tracker.servers.KVTaskClient;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
@@ -32,11 +27,7 @@ public class HttpTaskManagerTest {
     public static final int PORT = 8078;
     public static final String KEY = "testSaving";
     private TaskManager httpTaskManager;
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(Duration.class, new DurationAdapter())
-            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-            .registerTypeAdapter(InMemoryHistoryManager.class, new HistoryManagerAdapter((HttpTaskManager) httpTaskManager))
-            .create();
+    private Gson gson;
     Task savedTaskId1;
     Epic savedEpicId2;
     Subtask savedSubtaskId3;
@@ -49,6 +40,8 @@ public class HttpTaskManagerTest {
         kvServer.start();
         httpTaskManager = Managers.getDefault(URL, PORT, KEY);
         kvClient = new KVTaskClient(URL, PORT);
+
+        gson = Managers.getGson((HttpTaskManager) httpTaskManager);
 
         savedTaskId1 = new Task(1, "Сделать зарядку", Status.NEW, "описание задачи1",
                 15, LocalDateTime.of(2023, Month.MARCH, 22, 8, 0));
