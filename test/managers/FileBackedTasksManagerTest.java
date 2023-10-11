@@ -4,7 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import tracker.managers.FileBackedTasksManager;
+import tracker.managers.impl.FileBackedTasksManager;
 import tracker.models.Epic;
 import tracker.models.Status;
 import tracker.models.Subtask;
@@ -19,7 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
-    File file;
+    private File file;
 
     @BeforeEach
     void beforeEach() {

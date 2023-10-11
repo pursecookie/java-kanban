@@ -3,8 +3,7 @@ package tracker.models;
 import java.time.LocalDateTime;
 
 public class Subtask extends Task {
-
-    int epicId;
+    private final int epicId;
 
     public Subtask(int id, String title, Status status, String description, long duration, LocalDateTime startTime,
                    int epicId) {

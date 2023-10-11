@@ -1,8 +1,12 @@
-package tracker.managers;
+package tracker.managers.impl;
 
+import tracker.adapters.HistoryManagerAdapter;
 import tracker.converters.CsvConverter;
-import tracker.exceptions.*;
-import tracker.models.*;
+import tracker.exceptions.ManagerLoadException;
+import tracker.exceptions.ManagerSaveException;
+import tracker.models.Epic;
+import tracker.models.Subtask;
+import tracker.models.Task;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -10,10 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
-    File data;
-    static CsvConverter csvConverter = new CsvConverter();
+    private final static CsvConverter csvConverter = new CsvConverter();
+
+    public FileBackedTasksManager() {
+    }
 
     public void save() {
+        File data;
+
         try {
             data = new File("managerData.csv");
             if (!data.exists()) {
@@ -38,7 +46,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
             printWriter.println();
             printWriter.print(CsvConverter.historyToString(historyManager));
-
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка записи данных в файл автосохранения");
         }
@@ -55,14 +62,17 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             while ((line = bufferedReader.readLine()) != null) {
                 lines.add(line);
             }
+
             lines.remove(0);
 
             for (String row : lines) {
                 if (row.isEmpty()) {
                     continue;
                 }
+
                 if (row.contains("SUBTASK")) {
                     Subtask subtask = (Subtask) CsvConverter.fromString(row, loadedManager);
+
                     if (subtask != null) {
                         loadedManager.subtaskList.put(subtask.getId(), subtask);
                         loadedManager.prioritizedTasks.add(subtask);
@@ -72,6 +82,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     }
                 } else if (row.contains("EPIC")) {
                     Epic epic = (Epic) CsvConverter.fromString(row, loadedManager);
+
                     if (epic != null) {
                         loadedManager.epicList.put(epic.getId(), epic);
                         if (epic.getId() > maxId) {
@@ -80,6 +91,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     }
                 } else if (row.contains("TASK")) {
                     Task task = CsvConverter.fromString(row, loadedManager);
+
                     if (task != null) {
                         loadedManager.taskList.put(task.getId(), task);
                         loadedManager.prioritizedTasks.add(task);
@@ -89,44 +101,38 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     }
                 } else {
                     for (Integer id : CsvConverter.historyFromString(row)) {
-                        Task task = null;
-                        if (loadedManager.taskList.containsKey(id)) {
-                            task = loadedManager.taskList.get(id);
-                        } else if (loadedManager.epicList.containsKey(id)) {
-                            task = loadedManager.epicList.get(id);
-                        } else if (loadedManager.subtaskList.containsKey(id)) {
-                            task = loadedManager.subtaskList.get(id);
-                        }
-                        loadedManager.historyManager.add(task);
+                        loadedManager.historyManager.add(HistoryManagerAdapter.findTask(id, loadedManager));
                     }
                 }
             }
+
             loadedManager.counter.counter = maxId;
         } catch (IOException e) {
             throw new ManagerLoadException("Ошибка при чтении файла");
         }
+
         return loadedManager;
     }
 
     @Override
     public Task createTask(Task task) {
-        Task task1 = super.createTask(task);
+        Task createdTask = super.createTask(task);
         save();
-        return task1;
+        return createdTask;
     }
 
     @Override
     public Epic createEpic(Epic epic) {
-        Epic epic1 = super.createEpic(epic);
+        Epic createdEpic = super.createEpic(epic);
         save();
-        return epic1;
+        return createdEpic;
     }
 
     @Override
     public Subtask createSubtask(Subtask subtask) {
-        Subtask subtask1 = super.createSubtask(subtask);
+        Subtask createdSubtask = super.createSubtask(subtask);
         save();
-        return subtask1;
+        return createdSubtask;
     }
 
     @Override

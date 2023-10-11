@@ -3,8 +3,8 @@ package tracker.servers;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import tracker.managers.HttpTaskManager;
 import tracker.managers.Managers;
+import tracker.managers.impl.HttpTaskManager;
 import tracker.models.Epic;
 import tracker.models.Subtask;
 import tracker.models.Task;
@@ -72,7 +72,7 @@ public class HttpTaskServer {
                         break;
                     }
 
-                    if (httpTaskManager.getTaskList().size() != 0) {
+                    if (!httpTaskManager.getTaskList().isEmpty()) {
                         for (Task task : httpTaskManager.getTaskList()) {
                             if (task.getId() == outputTask.getId()) {
                                 httpTaskManager.updateTask(outputTask);
@@ -127,7 +127,7 @@ public class HttpTaskServer {
                         break;
                     }
 
-                    if (httpTaskManager.getEpicList().size() != 0) {
+                    if (!httpTaskManager.getEpicList().isEmpty()) {
                         for (Epic epic : httpTaskManager.getEpicList()) {
                             if (epic.getId() == outputEpic.getId()) {
                                 httpTaskManager.updateEpicInfo(outputEpic);
@@ -183,7 +183,7 @@ public class HttpTaskServer {
                         break;
                     }
 
-                    if (httpTaskManager.getSubtaskList().size() != 0) {
+                    if (!httpTaskManager.getSubtaskList().isEmpty()) {
                         for (Subtask subtask : httpTaskManager.getSubtaskList()) {
                             if (subtask.getId() == outputSubtask.getId()) {
                                 httpTaskManager.updateSubtask(outputSubtask);
@@ -265,5 +265,4 @@ public class HttpTaskServer {
         httpServer.stop(0);
         System.out.println("Остановили сервер на порту " + PORT);
     }
-
 }

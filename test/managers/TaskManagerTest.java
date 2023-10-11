@@ -15,13 +15,12 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class TaskManagerTest<T extends TaskManager> {
-
-    T taskManager;
-    Task savedTaskId1;
-    Epic savedEpicId2;
-    Subtask savedSubtaskId3;
-    Subtask savedSubtaskId4;
-    Counter counter;
+    protected T taskManager;
+    protected Task savedTaskId1;
+    protected Epic savedEpicId2;
+    protected Subtask savedSubtaskId3;
+    protected Subtask savedSubtaskId4;
+    protected Counter counter;
 
     @BeforeEach
     void createSavedTasks() {
@@ -99,7 +98,6 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.createSubtask(savedSubtaskId3);
 
         assertEquals(0, taskManager.getSubtaskList().size(), "Неверное количество подзадач в HashMap");
-
     }
 
     @DisplayName("Проверка получения списка задач по приоритету")
@@ -441,5 +439,4 @@ abstract class TaskManagerTest<T extends TaskManager> {
                 "Подзадачи не удалились из списка задач по приоритету");
         assertEquals(0, testEpic.getSubtasksIds().size(), "У эпика не очистился список его подзадач");
     }
-
 }

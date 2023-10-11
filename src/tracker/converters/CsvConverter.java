@@ -1,7 +1,7 @@
 package tracker.converters;
 
-import tracker.managers.FileBackedTasksManager;
 import tracker.managers.HistoryManager;
+import tracker.managers.impl.FileBackedTasksManager;
 import tracker.models.*;
 
 import java.time.LocalDateTime;
@@ -18,9 +18,11 @@ public class CsvConverter {
                     task.getStatus() + "," +
                     task.getDescription() + "," +
                     task.getDuration() + "," +
-                    task.getStartTime() + "," + "";
+                    task.getStartTime() + ",";
         }
+
         Subtask subtask = (Subtask) task;
+
         return subtask.getId() + "," +
                 subtask.getType() + "," +
                 subtask.getTitle() + "," +
@@ -40,6 +42,7 @@ public class CsvConverter {
         Status status = Status.valueOf(fields[3]);
         String description = fields[4];
         long duration = Long.parseLong(fields[5]);
+
         LocalDateTime startTime;
 
         if (Objects.equals(fields[6], "null")) {
@@ -49,6 +52,7 @@ public class CsvConverter {
         }
 
         int epicId = 0;
+
         if (fields.length > 7) {
             epicId = Integer.parseInt(fields[7]);
         }
@@ -67,23 +71,28 @@ public class CsvConverter {
             case SUBTASK:
                 return new Subtask(id, title, status, description, duration, startTime, epicId);
         }
+
         return null;
     }
 
     public static String historyToString(HistoryManager historyManager) {
         StringBuilder stringBuilder = new StringBuilder();
+
         for (Task task : historyManager.getHistory()) {
             stringBuilder.append(task.getId()).append(",");
         }
+
         return String.valueOf(stringBuilder);
     }
 
     public static List<Integer> historyFromString(String value) {
         List<Integer> historyId = new ArrayList<>();
         String[] idList = value.split(",");
+
         for (String id : idList) {
             historyId.add(Integer.valueOf(id));
         }
+
         return historyId;
     }
 }

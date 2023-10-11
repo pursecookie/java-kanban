@@ -74,5 +74,4 @@ public class KVTaskClient {
         }
         return response.body();
     }
-
 }

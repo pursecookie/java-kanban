@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import tracker.adapters.DurationAdapter;
 import tracker.adapters.HistoryManagerAdapter;
 import tracker.adapters.LocalDateTimeAdapter;
+import tracker.managers.impl.HttpTaskManager;
+import tracker.managers.impl.InMemoryHistoryManager;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

@@ -1,9 +1,13 @@
-package tracker.managers;
+package tracker.managers.impl;
 
+import tracker.managers.HistoryManager;
 import tracker.models.Node;
 import tracker.models.Task;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 class CustomLinkedList<T> {
     public Node<T> head;
@@ -12,14 +16,15 @@ class CustomLinkedList<T> {
 }
 
 public class InMemoryHistoryManager implements HistoryManager {
-    CustomLinkedList<Task> historyLinkedList = new CustomLinkedList<>();
-    Map<Integer, Node<Task>> historyMap = new HashMap<>();
+    private final CustomLinkedList<Task> historyLinkedList = new CustomLinkedList<>();
+    private final Map<Integer, Node<Task>> historyMap = new HashMap<>();
 
     @Override
     public void add(Task task) {
         if (historyMap.containsKey(task.getId())) {
             remove(task.getId());
         }
+
         historyMap.put(task.getId(), linkLast(task));
     }
 
@@ -37,23 +42,27 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node<Task> tail = historyLinkedList.tail;
         Node<Task> node = new Node<>(tail, task, null);
         historyLinkedList.tail = node;
+
         if (tail == null) {
             historyLinkedList.head = node;
         } else {
             tail.next = node;
         }
+
         historyLinkedList.size++;
+
         return node;
     }
 
     private List<Task> getTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
-
         Node<Task> node = historyLinkedList.head;
+
         while (node != null) {
             tasks.add(node.data);
             node = node.next;
         }
+
         return tasks;
     }
 
@@ -61,6 +70,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (node == null) {
             return;
         }
+
         final Node<Task> next = node.next;
         final Node<Task> prev = node.prev;
 

@@ -1,6 +1,6 @@
-package tracker.managers;
+package tracker.managers.impl;
 
-import com.google.gson.Gson;
+import tracker.managers.Managers;
 import tracker.servers.KVTaskClient;
 
 

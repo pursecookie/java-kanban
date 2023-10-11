@@ -1,13 +1,22 @@
 package servers;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import tracker.managers.*;
-import tracker.models.*;
-import tracker.servers.*;
+import tracker.managers.Managers;
+import tracker.managers.TaskManager;
+import tracker.managers.impl.HttpTaskManager;
+import tracker.models.Epic;
+import tracker.models.Status;
+import tracker.models.Subtask;
+import tracker.models.Task;
+import tracker.servers.HttpTaskServer;
+import tracker.servers.KVServer;
 
 import java.io.IOException;
 import java.net.URI;
@@ -20,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -33,12 +41,12 @@ public class HttpTaskServerTest {
     public static final String KEY = "testSaving";
     private TaskManager httpTaskManager;
     private Gson gson;
-    Task savedTaskId1;
-    Epic savedEpicId2;
-    Subtask savedSubtaskId3;
-    Subtask savedSubtaskId4;
-    Task savedTaskId5;
-    Epic savedEpicId6;
+    private Task savedTaskId1;
+    private Epic savedEpicId2;
+    private Subtask savedSubtaskId3;
+    private Subtask savedSubtaskId4;
+    private Task savedTaskId5;
+    private Epic savedEpicId6;
 
     @BeforeEach
     void beforeEach() throws IOException {
@@ -483,5 +491,4 @@ public class HttpTaskServerTest {
         }
         return response;
     }
-
 }

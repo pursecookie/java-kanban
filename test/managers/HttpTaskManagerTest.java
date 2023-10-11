@@ -5,7 +5,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import tracker.managers.*;
+import tracker.managers.Managers;
+import tracker.managers.TaskManager;
+import tracker.managers.impl.HttpTaskManager;
 import tracker.models.Epic;
 import tracker.models.Status;
 import tracker.models.Subtask;
@@ -28,11 +30,10 @@ public class HttpTaskManagerTest {
     public static final String KEY = "testSaving";
     private TaskManager httpTaskManager;
     private Gson gson;
-    Task savedTaskId1;
-    Epic savedEpicId2;
-    Subtask savedSubtaskId3;
-    Subtask savedSubtaskId4;
-    Task savedTaskId5;
+    private Task savedTaskId1;
+    private Epic savedEpicId2;
+    private Subtask savedSubtaskId3;
+    private Subtask savedSubtaskId4;
 
     @BeforeEach
     void beforeEach() throws IOException {
@@ -51,8 +52,6 @@ public class HttpTaskManagerTest {
                 20, LocalDateTime.of(2023, Month.MARCH, 22, 10, 0), 2);
         savedSubtaskId4 = new Subtask(4, "Вынести мусор", Status.NEW, "описание задачи4",
                 10, LocalDateTime.of(2023, Month.MARCH, 22, 9, 0), 2);
-        savedTaskId5 = new Task(5, "Позвонить маме", Status.NEW, "описание задачи5",
-                40, null);
     }
 
     @AfterEach

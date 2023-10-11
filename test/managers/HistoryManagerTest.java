@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import tracker.managers.HistoryManager;
-import tracker.models.*;
+import tracker.models.Counter;
+import tracker.models.Status;
+import tracker.models.Task;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -14,16 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static tracker.managers.Managers.getDefaultHistory;
 
 public class HistoryManagerTest {
-    HistoryManager historyManager;
-    Task savedTaskId1;
-    Task savedTaskId2;
-    Task savedTaskId3;
-    Counter counter;
+    private HistoryManager historyManager;
+    private Task savedTaskId1;
+    private Task savedTaskId2;
+    private Task savedTaskId3;
 
     @BeforeEach
     void createSavedTasks() {
         historyManager = getDefaultHistory();
-        counter = new Counter();
+        Counter counter = new Counter();
         savedTaskId1 = new Task(counter.count(), "Сделать зарядку", Status.NEW, "описание задачи1",
                 15, LocalDateTime.of(2023, Month.MARCH, 22, 8, 0));
         savedTaskId2 = new Task(counter.count(), "Заказать доставку", Status.NEW, "описание задачи2",
